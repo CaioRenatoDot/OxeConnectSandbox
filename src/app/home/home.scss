@@ -1,0 +1,119 @@
+:host {
+  display: block;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 32px;
+
+  h1 {
+    font: var(--mat-sys-headline-large);
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 140px;
+  background: var(--mat-sys-surface-container);
+  border-radius: 12px 12px 0 0;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: var(--mat-sys-primary);
+  }
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cart {
+  position: sticky;
+  top: 16px;
+}
+
+.qty {
+  display: flex;
+  align-items: center;
+}
+
+.stock {
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-primary);
+
+  &.out {
+    color: var(--mat-sys-error);
+  }
+}
+
+.empty {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.total {
+  text-align: right;
+  margin-top: 12px;
+}
+
+// ---------- Animações ----------
+
+// Hero: entra deslizando de cima
+.hero {
+  animation: fade-slide-down 0.6s ease-out both;
+}
+
+// Cards: animados pelo Motion (ver home.ts)
+
+// Itens do carrinho: animate.enter / animate.leave aplicam essas classes
+.item-enter {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.item-leave {
+  animation: slide-out-left 0.25s ease-in forwards;
+}
+
+@keyframes fade-slide-down {
+  from { opacity: 0; transform: translateY(-20px); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+}
+
+@keyframes slide-out-left {
+  to { opacity: 0; transform: translateX(-24px); }
+}
+
+// Acessibilidade: respeita quem prefere menos movimento
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

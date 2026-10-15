@@ -1,0 +1,52 @@
+// Paleta de cores do design system.
+// Uso nos componentes: @use 'tokens' as t;  →  color: t.$action-500;
+
+// brand
+$brand-100: #ebfffe;
+$brand-200: #a1fcff;
+$brand-300: #18e9f8;
+$brand-400: #009db4;
+$brand-500: #125667;
+$brand-600: #053847;
+
+// action
+$action-100: #eefaff;
+$action-200: #d9f2ff;
+$action-300: #8cddff;
+$action-400: #2fabff;
+$action-500: #175191;
+$action-600: #173c6b;
+
+// neutral
+$neutral-100: #f5f6f6;
+$neutral-200: #e4e6e9;
+$neutral-300: #a9b0b7;
+$neutral-400: #66707a;
+$neutral-500: #494e55;
+$neutral-600: #232529;
+
+// success
+$success-100: #e7f7e1;
+$success-200: #a9df96;
+$success-400: #65c046;
+$success-500: #387025;
+$success-600: #28491e;
+$success-700: #11280b;
+
+// danger
+$danger-100: #fee3e2;
+$danger-200: #fba9a6;
+$danger-300: #ed524d;
+$danger-400: #b7231e;
+$danger-500: #7d221f;
+$danger-600: #440d0b;
+
+// warning
+$warning-100: #fee9c7;
+$warning-200: #fdd28a;
+$warning-300: #fba034;
+$warning-400: #d95106;
+$warning-500: #92280e;
+$warning-600: #450e03;
+
+$white: #fff;

@@ -1,0 +1,273 @@
+@use 'tokens' as t;
+
+$title: t.$action-500;
+$text: t.$neutral-600;
+$muted: t.$neutral-400;
+$border: t.$neutral-200;
+$accent: t.$brand-400;
+
+:host {
+  display: block;
+  min-height: 100vh;
+  padding: 24px 32px;
+  box-sizing: border-box;
+  background: t.$neutral-100;
+  color: $text;
+}
+
+// ---------- Breadcrumb ----------
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: $muted;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+
+  .current-icon,
+  strong {
+    color: $title;
+  }
+}
+
+// ---------- Cabeçalho ----------
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+    font-weight: 600;
+    color: $title;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
+}
+
+// ---------- Indicadores ----------
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 10px;
+  background: t.$white;
+  box-shadow: 0 1px 3px rgba(#000, 0.06);
+
+  mat-icon {
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba($accent, 0.12);
+    color: $accent;
+  }
+
+  strong {
+    display: block;
+    font-size: 22px;
+    color: $title;
+  }
+
+  span {
+    font-size: 12px;
+    color: $muted;
+  }
+}
+
+// ---------- Filtros ----------
+.filters {
+  display: grid;
+  grid-template-columns: 2fr repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid $border;
+  border-radius: 10px;
+  background: t.$white;
+  transition: border-color 0.2s ease;
+
+  &:focus-within {
+    border-color: $title;
+  }
+
+  mat-icon {
+    color: $title;
+    pointer-events: none;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    outline: none;
+    background: none;
+    color: $text;
+    font: inherit;
+    font-size: 13px;
+  }
+}
+
+// ---------- Tabela ----------
+.table-card {
+  overflow-x: auto;
+  border-radius: 10px;
+  background: t.$white;
+  box-shadow: 0 1px 3px rgba(#000, 0.06);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+th {
+  padding: 14px 10px;
+  border-bottom: 1px solid t.$neutral-200;
+  color: $title;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+td {
+  padding: 12px 10px;
+  border-bottom: 1px solid t.$neutral-100;
+  white-space: nowrap;
+}
+
+tbody tr {
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: t.$action-100;
+  }
+
+  &:last-child td {
+    border-bottom: none;
+  }
+}
+
+th:first-child,
+td:first-child {
+  padding-left: 20px;
+}
+
+.title {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+}
+
+.stack {
+  min-width: 140px;
+  white-space: normal;
+}
+
+.num {
+  text-align: center;
+}
+
+.empty {
+  padding: 32px;
+  text-align: center;
+  color: $muted;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.more-btn {
+  mat-icon {
+    transition: transform 0.25s ease;
+  }
+
+  &.open mat-icon {
+    transform: rotate(180deg);
+  }
+}
+
+// Mesmo visual do dropdown do sistema (mat-menu em styles.scss)
+.actions-menu {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 10px 0;
+  border-radius: 16px;
+  background: t.$white;
+  box-shadow: 0 4px 16px rgba(#000, 0.12);
+  animation: menu-in 0.15s ease-out;
+
+  button {
+    min-height: 40px;
+    padding: 0 20px;
+    border: none;
+    background: none;
+    color: t.$neutral-600;
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(#000, 0.04);
+    }
+  }
+}
+
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+}
+
+.row-link {
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid $accent;
+    outline-offset: -2px;
+  }
+}
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: -8px 0 16px;
+  font-size: 12px;
+  color: $muted;
+}

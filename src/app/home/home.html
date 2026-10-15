@@ -1,0 +1,81 @@
+<section class="hero">
+  <h1>Bem-vindo à nossa loja</h1>
+  <p>Confira os produtos em destaque</p>
+</section>
+
+<div class="layout">
+  <section class="grid">
+    @for (product of store.products(); track product.id) {
+      <mat-card appearance="outlined" class="product">
+        <div class="thumb">
+          <mat-icon>{{ product.icon }}</mat-icon>
+        </div>
+        <mat-card-header>
+          <mat-card-title>{{ product.name }}</mat-card-title>
+          <mat-card-subtitle>{{ product.price | currency: 'BRL' }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p>{{ product.description }}</p>
+          @if (product.stock > 0) {
+            <p class="stock">Em estoque: {{ product.stock }}</p>
+          } @else {
+            <p class="stock out">Esgotado</p>
+          }
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-flat-button [disabled]="product.stock === 0" (click)="addToCart(product)">
+            <mat-icon>add_shopping_cart</mat-icon>
+            Comprar
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    }
+  </section>
+
+  <mat-card appearance="outlined" class="cart">
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="cart-icon" [matBadge]="store.cartCount()" [matBadgeHidden]="store.cartCount() === 0">
+        shopping_cart
+      </mat-icon>
+      <mat-card-title>Carrinho</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      @if (store.cartLines().length === 0) {
+        <p class="empty">Seu carrinho está vazio.</p>
+      } @else {
+        <mat-list>
+          @for (line of store.cartLines(); track line.productId) {
+            <mat-list-item animate.enter="item-enter" animate.leave="item-leave">
+              <span matListItemTitle>{{ line.product.name }}</span>
+              <span matListItemLine>{{ line.product.price * line.quantity | currency: 'BRL' }}</span>
+              <div matListItemMeta class="qty">
+                <button mat-icon-button aria-label="Diminuir" (click)="store.decrease(line.productId)">
+                  <mat-icon>remove</mat-icon>
+                </button>
+                <span>{{ line.quantity }}</span>
+                <button
+                  mat-icon-button
+                  aria-label="Aumentar"
+                  [disabled]="line.product.stock === 0"
+                  (click)="store.add(line.productId)"
+                >
+                  <mat-icon>add</mat-icon>
+                </button>
+                <button mat-icon-button aria-label="Remover" (click)="store.remove(line.productId)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </mat-list-item>
+          }
+        </mat-list>
+        <mat-divider />
+        <p class="total">Total: <strong>{{ store.total() | currency: 'BRL' }}</strong></p>
+      }
+    </mat-card-content>
+    @if (store.cartLines().length > 0) {
+      <mat-card-actions align="end">
+        <button mat-button (click)="store.clearCart()">Esvaziar</button>
+      </mat-card-actions>
+    }
+  </mat-card>
+</div>

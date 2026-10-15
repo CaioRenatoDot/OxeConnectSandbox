@@ -1,0 +1,180 @@
+@if (job(); as job) {
+  <nav class="breadcrumb">
+    <mat-icon>apartment</mat-icon>
+    <span>{{ companyName() }}</span>
+    <mat-icon>chevron_right</mat-icon>
+    <a routerLink="/">Vagas</a>
+    <mat-icon>chevron_right</mat-icon>
+    <strong>{{ job.title }}</strong>
+  </nav>
+
+  <header class="page-header">
+    <div class="title-block">
+      <a routerLink="/" class="back" aria-label="Voltar para vagas">
+        <mat-icon>arrow_back</mat-icon>
+      </a>
+      <div>
+        <div class="title-row">
+          <h1>{{ job.title }}</h1>
+          <span class="label" [class]="statusClass(job.status)">{{ job.status }}</span>
+        </div>
+        <p>
+          Aberta em {{ job.openedAt | date: 'dd/MM/yyyy' }} · {{ daysOpen() }} dias em aberto · Responsável:
+          <strong>{{ job.recruiter }}</strong>
+        </p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button mat-stroked-button (click)="copyLink()">
+        <mat-icon>link</mat-icon>
+        Copiar link
+      </button>
+      @if (job.status === 'Pausada' || job.status === 'Encerrada') {
+        <button mat-stroked-button (click)="setStatus('Aberta')">
+          <mat-icon>play_arrow</mat-icon>
+          Reabrir
+        </button>
+      } @else {
+        <button mat-stroked-button (click)="setStatus('Pausada')">
+          <mat-icon>pause</mat-icon>
+          Pausar
+        </button>
+        <button mat-flat-button class="btn-danger" (click)="setStatus('Encerrada')">
+          <mat-icon>block</mat-icon>
+          Encerrar vaga
+        </button>
+      }
+    </div>
+  </header>
+
+  <section class="stats">
+    <div class="stat">
+      <mat-icon>groups</mat-icon>
+      <div><strong [appCountUp]="job.candidates">0</strong><span>Candidatos inscritos</span></div>
+    </div>
+    <div class="stat">
+      <mat-icon>event</mat-icon>
+      <div><strong [appCountUp]="job.interviews">0</strong><span>Entrevistas realizadas</span></div>
+    </div>
+    <div class="stat">
+      <mat-icon>schedule</mat-icon>
+      <div><strong [appCountUp]="daysOpen()">0</strong><span>Dias em aberto</span></div>
+    </div>
+    <div class="stat">
+      <mat-icon>payments</mat-icon>
+      <div><strong class="money">{{ job.salary | currency: 'BRL' }}</strong><span>Salário oferecido</span></div>
+    </div>
+  </section>
+
+  <div class="layout">
+    <!-- Coluna principal: funil + candidatos -->
+    <div class="main-col">
+      <section class="card">
+        <h2>Funil do processo seletivo</h2>
+        <div class="funnel">
+          @for (step of funnel(); track step.stage; let i = $index) {
+            <button
+              type="button"
+              class="funnel-step"
+              [class.active]="stageFilter() === step.stage"
+              (click)="stageFilter.set(stageFilter() === step.stage ? '' : step.stage)"
+            >
+              <span class="count">{{ step.count }}</span>
+              <span class="bar"><span class="fill" [class]="'stage-' + i" [style.height.%]="step.percent"></span></span>
+              <span class="name">{{ step.stage }}</span>
+            </button>
+          }
+        </div>
+        <p class="hint">Clique numa etapa para filtrar os candidatos.</p>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h2>Candidatos <small>({{ visibleCandidates().length }})</small></h2>
+          <app-dropdown placeholder="Todas as etapas" [options]="stages" [(value)]="stageFilter" />
+        </div>
+
+        <ul class="candidates">
+          @for (candidate of visibleCandidates(); track candidate.id) {
+            <li>
+              <span class="avatar">{{ initials(candidate.name) }}</span>
+              <div class="info">
+                <strong>{{ candidate.name }}</strong>
+                <span>{{ candidate.role }} · inscrito em {{ candidate.appliedAt | date: 'dd/MM' }}</span>
+              </div>
+              <div class="score" [class.high]="candidate.score >= 80" [title]="'Aderência à vaga: ' + candidate.score + '%'">
+                <span class="score-bar"><span [style.width.%]="candidate.score"></span></span>
+                {{ candidate.score }}%
+              </div>
+              <span class="label stage" [class]="stageClass(candidate.stage)">{{ candidate.stage }}</span>
+              <div class="move">
+                <button
+                  type="button"
+                  aria-label="Voltar etapa"
+                  [disabled]="candidate.stage === stages[0]"
+                  (click)="move(candidate, -1)"
+                >
+                  <mat-icon>chevron_left</mat-icon>
+                </button>
+                <button
+                  type="button"
+                  aria-label="Avançar etapa"
+                  [disabled]="candidate.stage === stages[stages.length - 1]"
+                  (click)="move(candidate, 1)"
+                >
+                  <mat-icon>chevron_right</mat-icon>
+                </button>
+              </div>
+            </li>
+          } @empty {
+            <li class="empty">Nenhum candidato nesta etapa.</li>
+          }
+        </ul>
+      </section>
+    </div>
+
+    <!-- Coluna lateral: dados da vaga -->
+    <aside class="side-col">
+      <section class="card">
+        <h2>Detalhes da vaga</h2>
+        <dl class="details">
+          <div><dt>Senioridade</dt><dd>{{ job.seniority }}</dd></div>
+          <div><dt>Modelo de trabalho</dt><dd>{{ job.model }}</dd></div>
+          <div><dt>Salário</dt><dd>{{ job.salary | currency: 'BRL' }}</dd></div>
+          <div><dt>Abertura</dt><dd>{{ job.openedAt | date: 'dd/MM/yyyy' }}</dd></div>
+          <div><dt>Recrutador</dt><dd>{{ job.recruiter }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="card">
+        <h2>Tecnologias exigidas</h2>
+        <div class="tags">
+          @for (tech of job.stack; track tech; let first = $first) {
+            @if (first) {
+              <span class="tag tag-action" title="Tecnologia principal"><mat-icon>star</mat-icon>{{ tech }}</span>
+            } @else {
+              <span class="tag">{{ tech }}</span>
+            }
+          }
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Sobre a vaga</h2>
+        <p class="description">
+          Buscamos uma pessoa {{ job.seniority.toLowerCase() }} para atuar como {{ job.title.toLowerCase() }}, em
+          regime {{ job.model.toLowerCase() }}, trabalhando com {{ job.stack.join(', ') }} em produtos digitais da
+          empresa.
+        </p>
+      </section>
+    </aside>
+  </div>
+} @else {
+  <section class="not-found">
+    <mat-icon>search_off</mat-icon>
+    <h1>Vaga não encontrada</h1>
+    <p>Ela pode ter sido removida ou o link está incorreto.</p>
+    <a mat-flat-button routerLink="/">Voltar para as vagas</a>
+  </section>
+}

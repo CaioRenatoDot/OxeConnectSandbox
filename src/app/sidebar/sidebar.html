@@ -1,0 +1,57 @@
+<div class="brand">
+  <mat-icon class="brand-icon">hub</mat-icon>
+  <span class="label">OxeConnect</span>
+  <button
+    class="collapse-btn"
+    type="button"
+    [attr.aria-label]="collapsed() ? 'Expandir menu' : 'Recolher menu'"
+    (click)="toggleCollapsed()"
+  >
+    <mat-icon>{{ collapsed() ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+  </button>
+</div>
+
+<nav class="menu">
+  @for (item of menu; track item.label) {
+    @if (item.children) {
+      <button
+        class="item group"
+        type="button"
+        [class.open]="expanded() === item.label"
+        [attr.aria-expanded]="expanded() === item.label"
+        (click)="toggle(item.label)"
+      >
+        <mat-icon class="pin" [attr.title]="collapsed() ? item.label : null">{{ item.icon }}</mat-icon>
+        <span class="label">{{ item.label }}</span>
+        <mat-icon class="caret">arrow_drop_down</mat-icon>
+      </button>
+
+      <div class="submenu" [class.open]="!collapsed() && expanded() === item.label">
+        <ul>
+          @for (child of item.children; track child) {
+            <li><a href="#" (click)="$event.preventDefault()">{{ child }}</a></li>
+          }
+        </ul>
+      </div>
+    } @else {
+      <a
+        class="item"
+        [routerLink]="item.route ?? null"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <mat-icon class="pin" [attr.title]="collapsed() ? item.label : null">{{ item.icon }}</mat-icon>
+        <span class="label">{{ item.label }}</span>
+      </a>
+    }
+  }
+</nav>
+
+<nav class="footer">
+  @for (item of footer; track item.label) {
+    <a class="item" [class.logout]="item.danger" href="#" (click)="$event.preventDefault()">
+      <mat-icon [attr.title]="collapsed() ? item.label : null">{{ item.icon }}</mat-icon>
+      <span class="label">{{ item.label }}</span>
+    </a>
+  }
+</nav>

@@ -1,0 +1,135 @@
+<nav class="breadcrumb">
+  <mat-icon>apartment</mat-icon>
+  <span>{{ companyName() }}</span>
+  <mat-icon class="sep">chevron_right</mat-icon>
+  <mat-icon class="current-icon">work</mat-icon>
+  <strong>Vagas</strong>
+</nav>
+
+<header class="page-header">
+  <div>
+    <h1>Todas as vagas</h1>
+    <p>Acompanhe as vagas de TI abertas e o andamento dos processos seletivos.</p>
+  </div>
+  <div class="actions">
+    <button
+      mat-stroked-button
+      class="more-btn"
+      cdkOverlayOrigin
+      #actionsOrigin="cdkOverlayOrigin"
+      [class.open]="actionsOpen()"
+      (click)="actionsOpen.set(!actionsOpen())"
+    >
+      Ações
+      <mat-icon iconPositionEnd>expand_more</mat-icon>
+    </button>
+    <ng-template
+      cdkConnectedOverlay
+      [cdkConnectedOverlayOrigin]="actionsOrigin"
+      [cdkConnectedOverlayOpen]="actionsOpen()"
+      [cdkConnectedOverlayPositions]="centeredBelow"
+      cdkConnectedOverlayHasBackdrop
+      cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+      (backdropClick)="actionsOpen.set(false)"
+      (detach)="actionsOpen.set(false)"
+    >
+      <div class="actions-menu" role="menu">
+        @for (action of actions; track action.label) {
+          <button type="button" role="menuitem" (click)="runAction(action.run)">{{ action.label }}</button>
+        }
+      </div>
+    </ng-template>
+
+    <button mat-flat-button (click)="toast.success('Vaga criada com sucesso')">
+      <mat-icon>add</mat-icon>
+      Nova vaga
+    </button>
+  </div>
+</header>
+
+<section class="stats">
+  @for (stat of stats(); track stat.label) {
+    <div class="stat">
+      <mat-icon>{{ stat.icon }}</mat-icon>
+      <div>
+        <strong [appCountUp]="stat.value">0</strong>
+        <span>{{ stat.label }}</span>
+      </div>
+    </div>
+  }
+</section>
+
+<section class="filters">
+  <label class="field search">
+    <mat-icon>search</mat-icon>
+    <input type="search" placeholder="Buscar por vaga ou tecnologia" [value]="search()" (input)="search.set(value($event))" />
+  </label>
+
+  <app-dropdown placeholder="Situação" [options]="statuses" [(value)]="status" />
+
+  <app-dropdown placeholder="Senioridade" [options]="seniorities" [(value)]="seniority" />
+
+  <app-dropdown placeholder="Modelo de trabalho" [options]="models" [(value)]="model" />
+</section>
+
+@if (activeFilters().length) {
+  <section class="active-filters">
+    <span>Filtros ativos:</span>
+    <div class="tags">
+      @for (filter of activeFilters(); track filter.label) {
+        <span class="tag tag-action">
+          {{ filter.label }}
+          <button type="button" class="tag-remove" [attr.aria-label]="'Remover filtro ' + filter.label" (click)="filter.clear()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </span>
+      }
+    </div>
+    <button mat-button (click)="clearFilters()">Limpar tudo</button>
+  </section>
+}
+
+<section class="table-card">
+  <table>
+    <thead>
+      <tr>
+        <th>Vaga</th>
+        <th>Tecnologias</th>
+        <th>Abertura</th>
+        <th>Senioridade</th>
+        <th>Modelo</th>
+        <th class="num">Candidatos</th>
+        <th class="num">Entrevistas</th>
+        <th>Salário</th>
+        <th>Recrutador</th>
+        <th>Situação</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (job of filtered(); track job.id) {
+        <tr class="row-link" tabindex="0" (click)="openJob(job.id)" (keydown.enter)="openJob(job.id)">
+          <td class="title" [title]="job.title">{{ job.title }}</td>
+          <td class="stack">
+            <div class="tags">
+              @for (tech of job.stack; track tech) {
+                <span class="tag">{{ tech }}</span>
+              }
+            </div>
+          </td>
+          <td>{{ job.openedAt | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ job.seniority }}</td>
+          <td>{{ job.model }}</td>
+          <td class="num">{{ job.candidates }}</td>
+          <td class="num">{{ job.interviews }}</td>
+          <td>{{ job.salary | currency: 'BRL' }}</td>
+          <td>{{ job.recruiter }}</td>
+          <td><span class="label" [class]="statusClass(job.status)">{{ job.status }}</span></td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="10" class="empty">Nenhuma vaga encontrada com esses filtros.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</section>

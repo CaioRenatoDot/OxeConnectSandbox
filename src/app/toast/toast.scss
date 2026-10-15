@@ -1,0 +1,46 @@
+@use 'tokens' as t;
+
+:host {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 320px;
+  color: t.$neutral-600;
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  font-size: 28px;
+
+  &.success { color: t.$success-400; }
+  &.error { color: t.$danger-300; }
+  &.warning { color: t.$warning-300; }
+  &.info { color: t.$action-400; }
+}
+
+.message {
+  flex: 1;
+  font-size: 15px;
+}
+
+.close {
+  margin-left: 24px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: t.$neutral-600;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: rgba(#000, 0.06);
+  }
+}
