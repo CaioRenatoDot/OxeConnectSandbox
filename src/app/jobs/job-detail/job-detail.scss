@@ -298,6 +298,14 @@ $stage-colors: (t.$neutral-300, t.$warning-300, t.$warning-400, t.$action-400, t
       border-bottom: none;
     }
 
+    &.clickable {
+      cursor: pointer;
+
+      &:hover {
+        background: t.$neutral-100;
+      }
+    }
+
     &.empty {
       display: block;
       padding: 24px;

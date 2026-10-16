@@ -6,11 +6,14 @@ import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angul
 import { Toast } from '../toast/toast';
 import { Dropdown } from '../dropdown/dropdown';
 import { CountUp } from '../count-up/count-up';
+import { SectionTabs } from '../sections/section-tabs';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { NewJobDialog } from '../jobs/new-job-dialog/new-job-dialog';
 import { Jobs, MODELS, SENIORITIES, STATUSES, STATUS_LABEL, Status } from '../jobs/jobs';
 
 @Component({
-  imports: [CurrencyPipe, DatePipe, MatIconModule, MatButtonModule, CdkConnectedOverlay, CdkOverlayOrigin, Dropdown, CountUp],
+  imports: [CurrencyPipe, DatePipe, MatIconModule, MatButtonModule, CdkConnectedOverlay, CdkOverlayOrigin, Dropdown, CountUp, SectionTabs],
   selector: 'app-dashboard',
   styleUrl: './dashboard.scss',
   templateUrl: './dashboard.html',
@@ -32,6 +35,15 @@ export class Dashboard {
     { label: 'Enviar convites', run: () => this.toast.warning('Nenhum candidato selecionado') },
     { label: 'Criar usuário', run: () => this.toast.error('Erro ao criar usuário') },
   ];
+
+  private readonly dialog = inject(MatDialog);
+
+  protected openNewJob(): void {
+    this.dialog
+      .open(NewJobDialog, { width: '560px', maxWidth: 'calc(100vw - 32px)', autoFocus: 'first-tabbable' })
+      .afterClosed()
+      .subscribe((job) => job && this.toast.success(`Vaga "${job.title}" criada com sucesso`));
+  }
 
   protected runAction(run: () => void): void {
     this.actionsOpen.set(false);

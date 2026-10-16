@@ -6,10 +6,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { CountUp } from '../../count-up/count-up';
 import { Dropdown } from '../../dropdown/dropdown';
 import { Toast } from '../../toast/toast';
+import { CandidateProfile } from '../candidate-profile/candidate-profile';
 import { Candidate, Jobs, STAGES, STAGE_LABEL, STATUS_LABEL, Stage, Status } from '../jobs';
 
 @Component({
-  imports: [CurrencyPipe, DatePipe, RouterLink, MatIconModule, MatButtonModule, CountUp, Dropdown],
+  imports: [CurrencyPipe, DatePipe, RouterLink, MatIconModule, MatButtonModule, CountUp, Dropdown, CandidateProfile],
   selector: 'app-job-detail',
   styleUrl: './job-detail.scss',
   templateUrl: './job-detail.html',
@@ -38,6 +39,9 @@ export class JobDetail {
       .filter((c) => !this.stageFilter() || c.stage === this.stageFilter())
       .sort((a, b) => b.score - a.score),
   );
+
+  // Candidato aberto no modal de análise da IA
+  protected readonly selected = signal<Candidate | null>(null);
 
   // Quantidade de candidatos em cada etapa do funil
   protected readonly funnel = computed(() => {
@@ -87,8 +91,11 @@ export class JobDetail {
     this.toast.info(`${candidate.name} movido para "${stage}"`);
   }
 
+  // Link público da vaga (site de carreiras), o mesmo que é compartilhado com candidatos
+  protected readonly publicUrl = computed(() => `${location.origin}/carreiras/vagas/${this.id()}`);
+
   protected copyLink(): void {
-    navigator.clipboard?.writeText(location.href);
+    navigator.clipboard?.writeText(this.publicUrl());
     this.toast.success('Link da vaga copiado');
   }
 }

@@ -223,20 +223,20 @@ html {
 .tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  border-radius: 6px;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
   background: color.mix(t.$brand-500, t.$neutral-200, 22%);
   color: t.$brand-500;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.3;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
   white-space: nowrap;
 
   .mat-icon {
-    width: 14px;
-    height: 14px;
-    font-size: 14px;
+    width: 12px;
+    height: 12px;
+    font-size: 12px;
   }
 
   .tag-remove {
@@ -271,5 +271,110 @@ html {
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
+}
+
+// ---------- Transição entre páginas (withViewTransitions no router) ----------
+// Só o conteúdo (main) anima; a sidebar fica parada e o sublinhado da aba desliza
+::view-transition-group(root),
+::view-transition-group(sidebar) {
+  animation: none;
+}
+
+::view-transition-old(page) {
+  animation: page-out 0.15s ease-in both;
+}
+
+::view-transition-new(page) {
+  animation: page-in 0.25s ease-out both;
+}
+
+// Entre abas da mesma seção a página troca na hora, sem fade nem deslocamento
+html[data-slide='tab']::view-transition-old(page) {
+  display: none;
+}
+
+html[data-slide='tab']::view-transition-new(page) {
+  animation: none;
+}
+
+// Barra de abas troca na hora (sem fade nem deslocamento); só o sublinhado desliza
+::view-transition-group(section-tabs),
+::view-transition-new(section-tabs) {
+  animation: none;
+}
+
+::view-transition-old(section-tabs) {
+  display: none;
+}
+
+::view-transition-group(tab-indicator) {
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+// Slide horizontal entre a lista de vagas e o detalhe (direção definida em app.config.ts)
+html[data-slide='forward']::view-transition-old(page) {
+  animation: slide-out-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+html[data-slide='forward']::view-transition-new(page) {
+  animation: slide-in-right 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+html[data-slide='back']::view-transition-old(page) {
+  animation: slide-out-right 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+html[data-slide='back']::view-transition-new(page) {
+  animation: slide-in-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes slide-out-left {
+  to {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(80px);
+  }
+}
+
+@keyframes slide-out-right {
+  to {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-80px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }

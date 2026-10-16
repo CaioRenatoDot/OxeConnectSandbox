@@ -79,6 +79,20 @@ export class Jobs {
     return this.all().find((job) => job.id === id);
   }
 
+  /** Cadastra uma vaga nova (aberta, sem candidatos) no topo da lista. */
+  create(data: Pick<JobOpening, 'title' | 'stack' | 'seniority' | 'model' | 'salary' | 'recruiter'>): JobOpening {
+    const job: JobOpening = {
+      ...data,
+      id: Math.max(0, ...this.all().map((j) => j.id)) + 1,
+      openedAt: new Date().toISOString().slice(0, 10),
+      candidates: 0,
+      interviews: 0,
+      status: 'Aberta',
+    };
+    this.all.update((jobs) => [job, ...jobs]);
+    return job;
+  }
+
   setStatus(id: number, status: Status): void {
     this.all.update((jobs) => jobs.map((job) => (job.id === id ? { ...job, status } : job)));
   }

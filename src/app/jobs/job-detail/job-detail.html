@@ -26,6 +26,10 @@
     </div>
 
     <div class="actions">
+      <a mat-stroked-button [href]="publicUrl()" target="_blank" rel="noopener">
+        <mat-icon>open_in_new</mat-icon>
+        Ver página da vaga
+      </a>
       <button mat-stroked-button (click)="copyLink()">
         <mat-icon>link</mat-icon>
         Copiar link
@@ -97,7 +101,7 @@
 
         <ul class="candidates">
           @for (candidate of visibleCandidates(); track candidate.id) {
-            <li>
+            <li class="clickable" (click)="selected.set(candidate)">
               <span class="avatar">{{ initials(candidate.name) }}</span>
               <div class="info">
                 <strong>{{ candidate.name }}</strong>
@@ -108,7 +112,7 @@
                 {{ candidate.score }}%
               </div>
               <span class="label stage" [class]="stageClass(candidate.stage)">{{ candidate.stage }}</span>
-              <div class="move">
+              <div class="move" (click)="$event.stopPropagation()">
                 <button
                   type="button"
                   aria-label="Voltar etapa"
@@ -131,6 +135,10 @@
             <li class="empty">Nenhum candidato nesta etapa.</li>
           }
         </ul>
+
+        @if (selected(); as candidate) {
+          <app-candidate-profile [candidate]="candidate" [job]="job" (closed)="selected.set(null)" />
+        }
       </section>
     </div>
 

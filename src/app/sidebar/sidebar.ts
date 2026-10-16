@@ -2,11 +2,13 @@ import { Component, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 
+import { SECTIONS, tabLink } from '../sections/sections';
+
 interface MenuItem {
   label: string;
   icon: string;
   route?: string;
-  children?: string[];
+  children?: { label: string; route: string }[];
 }
 
 @Component({
@@ -19,31 +21,11 @@ interface MenuItem {
 export class Sidebar {
   protected readonly menu: MenuItem[] = [
     { label: 'Dashboard', icon: 'dashboard', route: '/' },
-    {
-      label: 'Vagas',
-      icon: 'work',
-      children: ['Todas as vagas', 'Nova vaga', 'Requisições de vaga', 'Banco de vagas'],
-    },
-    {
-      label: 'Candidatos',
-      icon: 'person_search',
-      children: ['Banco de talentos', 'Triagem de currículos', 'Testes técnicos', 'Favoritos'],
-    },
-    {
-      label: 'Processo seletivo',
-      icon: 'view_kanban',
-      children: ['Pipeline', 'Entrevistas', 'Feedbacks', 'Propostas', 'Contratações'],
-    },
-    {
-      label: 'Relatórios',
-      icon: 'bar_chart',
-      children: ['Funil de recrutamento', 'Tempo de contratação', 'Origem dos candidatos'],
-    },
-    {
-      label: 'Configurações',
-      icon: 'settings',
-      children: ['Recrutadores', 'Etapas do processo', 'Tecnologias e skills', 'Integrações'],
-    },
+    ...SECTIONS.map((section) => ({
+      label: section.label,
+      icon: section.icon,
+      children: section.tabs.map((tab) => ({ label: tab.label, route: tabLink(section, tab) })),
+    })),
   ];
 
   protected readonly footer = [

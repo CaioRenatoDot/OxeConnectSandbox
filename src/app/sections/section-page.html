@@ -1,0 +1,21 @@
+<nav class="breadcrumb">
+  <mat-icon class="current-icon">{{ current().icon }}</mat-icon>
+  <span>{{ current().label }}</span>
+  <mat-icon>chevron_right</mat-icon>
+  <strong>{{ currentTab().label }}</strong>
+</nav>
+
+<header class="page-header">
+  <h1>{{ current().label }}</h1>
+</header>
+
+<app-section-tabs [section]="section()" />
+
+<section class="panel" role="tabpanel">
+  <div class="empty">
+    <span class="icon"><mat-icon>{{ currentTab().icon }}</mat-icon></span>
+    <h2>{{ currentTab().label }}</h2>
+    <p>{{ currentTab().description }}</p>
+    <span class="label">Em construção</span>
+  </div>
+</section>

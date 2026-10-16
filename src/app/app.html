@@ -1,6 +1,10 @@
-<div class="shell">
-  <app-sidebar />
-  <main>
-    <router-outlet />
-  </main>
-</div>
+@if (isPublic()) {
+  <router-outlet />
+} @else {
+  <div class="shell">
+    <app-sidebar />
+    <main>
+      <router-outlet />
+    </main>
+  </div>
+}
