@@ -6,16 +6,319 @@
 </nav>
 
 <header class="page-header">
-  <h1>{{ current().label }}</h1>
+  <div>
+    <h1>{{ currentTab().label }}</h1>
+    <p>{{ currentTab().description }}</p>
+  </div>
+  @if (section() === 'vagas') {
+    <button mat-flat-button (click)="openNewJobDialog()">
+      <mat-icon>add</mat-icon>
+      Nova vaga
+    </button>
+  }
 </header>
 
 <app-section-tabs [section]="section()" />
 
 <section class="panel" role="tabpanel">
-  <div class="empty">
-    <span class="icon"><mat-icon>{{ currentTab().icon }}</mat-icon></span>
-    <h2>{{ currentTab().label }}</h2>
-    <p>{{ currentTab().description }}</p>
-    <span class="label">Em construção</span>
-  </div>
+  @switch (section()) {
+    @case ('vagas') {
+      <div class="jobs-grid">
+        @for (job of jobs(); track job.id) {
+          <article class="job-card">
+            <div class="job-card-top">
+              <div>
+                <a [routerLink]="['/vagas', job.id]" class="job-title">{{ job.title }}</a>
+                <span class="meta">{{ job.seniority }} · {{ job.model }} · {{ job.salary | currency: 'BRL' }}</span>
+              </div>
+              <span class="label" [class]="statusClass(job.status)">{{ job.status }}</span>
+            </div>
+            <div class="tags">
+              @for (tech of job.stack; track tech) {
+                <span class="tag">{{ tech }}</span>
+              }
+            </div>
+            <div class="job-card-footer">
+              <span>Responsável: <strong>{{ job.recruiter }}</strong> · {{ job.candidates }} candidatos</span>
+              <div class="card-actions">
+                <button mat-stroked-button (click)="cloneJob(job)">
+                  <mat-icon>content_copy</mat-icon>
+                  Reaproveitar modelo
+                </button>
+                <a mat-button [routerLink]="['/vagas', job.id]">Ver detalhes</a>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    }
+
+    @case ('candidatos') {
+      <div class="toolbar">
+        <label class="search-box">
+          <mat-icon>search</mat-icon>
+          <input
+            type="search"
+            placeholder="Buscar por candidato, cargo ou vaga..."
+            [value]="search()"
+            (input)="search.set(value($event))"
+          />
+        </label>
+        <span class="counter">{{ filteredCandidates().length }} candidato(s)</span>
+      </div>
+
+      <ul class="candidates-list">
+        @for (candidate of filteredCandidates(); track candidate.id) {
+          <li class="candidate-row" (click)="selectedCandidate.set(candidate)">
+            <button
+              type="button"
+              class="fav-btn"
+              [class.active]="candidate.favorite"
+              [attr.aria-label]="candidate.favorite ? 'Remover dos favoritos' : 'Favoritar'"
+              (click)="toggleFavorite(candidate, $event)"
+            >
+              <mat-icon>{{ candidate.favorite ? 'star' : 'star_border' }}</mat-icon>
+            </button>
+            <span class="avatar">{{ initials(candidate.name) }}</span>
+            <div class="info">
+              <strong>{{ candidate.name }}</strong>
+              <span>
+                {{ candidate.role }}
+                @if (candidate.jobTitle) {
+                  · <a [routerLink]="['/vagas', candidate.jobId]" (click)="$event.stopPropagation()">{{ candidate.jobTitle }}</a>
+                }
+                · {{ candidate.appliedAt | date: 'dd/MM/yyyy' }}
+              </span>
+            </div>
+            <div class="score" [class.high]="candidate.score >= 80">
+              <span class="score-bar"><span [style.width.%]="candidate.score"></span></span>
+              {{ candidate.score }}%
+            </div>
+            <span class="label stage" [class]="stageClass(candidate.stage)">{{ candidate.stage }}</span>
+            <div class="move" (click)="$event.stopPropagation()">
+              <button
+                type="button"
+                aria-label="Voltar etapa"
+                [disabled]="candidate.stage === stages[0]"
+                (click)="moveCandidate(candidate, -1, $event)"
+              >
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              <button
+                type="button"
+                aria-label="Avançar etapa"
+                [disabled]="candidate.stage === stages[stages.length - 1]"
+                (click)="moveCandidate(candidate, 1, $event)"
+              >
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+          </li>
+        } @empty {
+          <li class="empty-row">Nenhum candidato encontrado para este filtro.</li>
+        }
+      </ul>
+    }
+
+    @case ('processo') {
+      @if (tab() === 'pipeline') {
+        <div class="kanban">
+          @for (col of kanbanColumns(); track col.stage) {
+            <div class="kanban-col">
+              <header class="kanban-header">
+                <strong>{{ col.stage }}</strong>
+                <span class="badge">{{ col.total }}</span>
+              </header>
+              <div class="kanban-cards">
+                @for (c of col.items; track c.id) {
+                  <div class="kanban-card" (click)="selectedCandidate.set(c)">
+                    <div class="kanban-card-top">
+                      <strong>{{ c.name }}</strong>
+                      <span class="score-pill" [class.high]="c.score >= 80">{{ c.score }}%</span>
+                    </div>
+                    <span class="role">{{ c.role }}</span>
+                    @if (c.jobTitle) {
+                      <span class="job-ref">{{ c.jobTitle }}</span>
+                    }
+                    <div class="kanban-actions" (click)="$event.stopPropagation()">
+                      <button
+                        type="button"
+                        [disabled]="c.stage === stages[0]"
+                        (click)="moveCandidate(c, -1, $event)"
+                      >
+                        <mat-icon>chevron_left</mat-icon>
+                      </button>
+                      <button
+                        type="button"
+                        [disabled]="c.stage === stages[stages.length - 1]"
+                        (click)="moveCandidate(c, 1, $event)"
+                      >
+                        <mat-icon>chevron_right</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <ul class="candidates-list">
+          @for (candidate of filteredCandidates(); track candidate.id) {
+            <li class="candidate-row" (click)="selectedCandidate.set(candidate)">
+              <span class="avatar">{{ initials(candidate.name) }}</span>
+              <div class="info">
+                <strong>{{ candidate.name }}</strong>
+                <span>{{ candidate.role }} · {{ candidate.jobTitle }} · {{ candidate.appliedAt | date: 'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="score" [class.high]="candidate.score >= 80">
+                <span class="score-bar"><span [style.width.%]="candidate.score"></span></span>
+                {{ candidate.score }}%
+              </div>
+              <span class="label stage" [class]="stageClass(candidate.stage)">{{ candidate.stage }}</span>
+              <div class="move" (click)="$event.stopPropagation()">
+                <button
+                  type="button"
+                  [disabled]="candidate.stage === stages[0]"
+                  (click)="moveCandidate(candidate, -1, $event)"
+                >
+                  <mat-icon>chevron_left</mat-icon>
+                </button>
+                <button
+                  type="button"
+                  [disabled]="candidate.stage === stages[stages.length - 1]"
+                  (click)="moveCandidate(candidate, 1, $event)"
+                >
+                  <mat-icon>chevron_right</mat-icon>
+                </button>
+              </div>
+            </li>
+          } @empty {
+            <li class="empty-row">Nenhum candidato nesta etapa do processo seletivo.</li>
+          }
+        </ul>
+      }
+    }
+
+    @case ('relatorios') {
+      @if (tab() === 'funil') {
+        <div class="report-list">
+          @for (step of globalFunnel(); track step.stage) {
+            <div class="report-row">
+              <span class="report-label">{{ step.stage }}</span>
+              <div class="report-bar">
+                <span class="report-fill" [style.width.%]="step.percent"></span>
+              </div>
+              <strong>{{ step.count }} candidatos ({{ step.percent }}%)</strong>
+            </div>
+          }
+        </div>
+      } @else if (tab() === 'tempo') {
+        <div class="report-list">
+          @for (job of jobs(); track job.id) {
+            <div class="report-row">
+              <div>
+                <a [routerLink]="['/vagas', job.id]" class="job-title">{{ job.title }}</a>
+                <div class="meta">Aberta em {{ job.openedAt | date: 'dd/MM/yyyy' }} · Recrutador: {{ job.recruiter }}</div>
+              </div>
+              <span class="label" [class]="statusClass(job.status)">{{ job.status }}</span>
+              <strong>{{ daysOpen(job.openedAt) }} dias em aberto</strong>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="breakdown-grid">
+          <div class="breakdown-card">
+            <h3>Por Modelo de Trabalho</h3>
+            @for (item of modelBreakdown(); track item.label) {
+              <div class="breakdown-item">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.jobs }} vagas · {{ item.candidates }} candidatos</strong>
+              </div>
+            }
+          </div>
+          <div class="breakdown-card">
+            <h3>Por Senioridade</h3>
+            @for (item of seniorityBreakdown(); track item.label) {
+              <div class="breakdown-item">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.jobs }} vagas · {{ item.candidates }} candidatos</strong>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    @case ('configuracoes') {
+      @if (tab() === 'recrutadores') {
+        <div class="report-list">
+          @for (rec of recruiters(); track rec.name) {
+            <div class="report-row">
+              <div class="recruiter-info">
+                <span class="avatar">{{ initials(rec.name) }}</span>
+                <div>
+                  <strong>{{ rec.name }}</strong>
+                  <div class="meta">Recrutador(a) Tech</div>
+                </div>
+              </div>
+              <span>{{ rec.jobs }} vagas sob gestão</span>
+              <strong>{{ rec.candidates }} candidatos</strong>
+            </div>
+          }
+        </div>
+      } @else if (tab() === 'etapas') {
+        <div class="report-list">
+          @for (step of globalFunnel(); track step.stage; let i = $index) {
+            <div class="report-row">
+              <strong>{{ i + 1 }}. {{ step.stage }}</strong>
+              <span class="label" [class]="stageClass(step.stage)">{{ step.stage }}</span>
+              <span>{{ step.count }} candidatos ativos</span>
+            </div>
+          }
+        </div>
+      } @else if (tab() === 'skills') {
+        <div class="skills-cloud">
+          @for (skill of skillsCatalog(); track skill.name) {
+            <div class="skill-chip">
+              <strong>{{ skill.name }}</strong>
+              <span>{{ skill.count }} vaga(s)</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="jobs-grid">
+          @for (integ of integrations(); track integ.name; let i = $index) {
+            <article class="job-card">
+              <div class="job-card-top">
+                <div>
+                  <strong class="job-title">{{ integ.name }}</strong>
+                  <p class="meta">{{ integ.description }}</p>
+                </div>
+                <span class="label" [class]="integ.connected ? 'label-success' : 'label-neutral'">
+                  {{ integ.connected ? 'Conectado' : 'Desconectado' }}
+                </span>
+              </div>
+              <div class="job-card-footer">
+                <span>Sincronização automática</span>
+                <button mat-stroked-button (click)="toggleIntegration(i)">
+                  {{ integ.connected ? 'Desconectar' : 'Conectar' }}
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    }
+  }
 </section>
+
+@if (selectedCandidate(); as candidate) {
+  @if (selectedCandidateJob(); as job) {
+    <app-candidate-profile
+      [candidate]="candidate"
+      [job]="job"
+      (closed)="selectedCandidate.set(null)"
+    />
+  }
+}

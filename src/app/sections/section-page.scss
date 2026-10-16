@@ -38,54 +38,481 @@ $border: t.$neutral-200;
   }
 }
 
-.page-header h1 {
-  margin: 0 0 20px;
-  font-size: 26px;
-  font-weight: 600;
-  color: $title;
-}
-
-// ---------- Conteúdo da aba ----------
-.panel {
-  padding: 48px 24px;
-  border-radius: 12px;
-  background: t.$white;
-}
-
-.empty {
+.page-header {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
 
-  .icon {
-    display: grid;
-    place-items: center;
-    width: 64px;
-    height: 64px;
-    margin-bottom: 8px;
-    border-radius: 50%;
-    background: t.$neutral-100;
+  h1 {
+    margin: 0 0 4px;
+    font-size: 26px;
+    font-weight: 600;
     color: $title;
-
-    mat-icon {
-      width: 32px;
-      height: 32px;
-      font-size: 32px;
-    }
-  }
-
-  h2 {
-    margin: 0;
-    color: $title;
-    font-size: 18px;
   }
 
   p {
-    max-width: 420px;
-    margin: 0 0 8px;
+    margin: 0;
     color: $muted;
     font-size: 14px;
+  }
+}
+
+.panel {
+  padding: 24px;
+  border-radius: 12px;
+  background: t.$white;
+  border: 1px solid $border;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    max-width: 420px;
+    padding: 8px 12px;
+    border: 1px solid $border;
+    border-radius: 8px;
+    background: t.$neutral-100;
+
+    input {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: $text;
+      font-size: 14px;
+      outline: none;
+    }
+  }
+
+  .counter {
+    color: $muted;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+.jobs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.job-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid $border;
+  border-radius: 10px;
+
+  .job-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .job-title {
+    display: block;
+    color: $title;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .meta {
+    display: block;
+    margin-top: 4px;
+    color: $muted;
+    font-size: 13px;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .job-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid $border;
+    font-size: 13px;
+    color: $muted;
+  }
+
+  .card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.candidates-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.candidate-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 8px;
+  border-bottom: 1px solid $border;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: t.$neutral-100;
+  }
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  .fav-btn {
+    border: 0;
+    background: transparent;
+    color: $muted;
+    cursor: pointer;
+    padding: 4px;
+
+    &.active {
+      color: #f59e0b;
+    }
+  }
+
+  .avatar {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: t.$neutral-100;
+    color: $title;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .info {
+    flex: 1;
+    min-width: 0;
+
+    strong {
+      display: block;
+      color: $text;
+      font-size: 14px;
+    }
+
+    span {
+      display: block;
+      color: $muted;
+      font-size: 12px;
+
+      a {
+        color: $title;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  .score {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+
+    .score-bar {
+      width: 64px;
+      height: 6px;
+      border-radius: 999px;
+      background: t.$neutral-200;
+      overflow: hidden;
+
+      span {
+        display: block;
+        height: 100%;
+        background: $title;
+      }
+    }
+
+    &.high .score-bar span {
+      background: t.$success-500;
+    }
+  }
+
+  .move {
+    display: flex;
+    gap: 4px;
+
+    button {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid $border;
+      border-radius: 6px;
+      background: t.$white;
+      cursor: pointer;
+
+      &:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+    }
+  }
+}
+
+.empty-row {
+  padding: 32px;
+  text-align: center;
+  color: $muted;
+}
+
+.kanban {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(210px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.kanban-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: t.$neutral-100;
+
+  .kanban-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: $title;
+
+    .badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: t.$white;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  }
+
+  .kanban-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .kanban-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px;
+    border: 1px solid $border;
+    border-radius: 8px;
+    background: t.$white;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+
+    .kanban-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    .score-pill {
+      font-size: 11px;
+      font-weight: 700;
+      color: $title;
+
+      &.high {
+        color: t.$success-500;
+      }
+    }
+
+    .role {
+      font-size: 12px;
+      color: $text;
+    }
+
+    .job-ref {
+      font-size: 11px;
+      color: $muted;
+    }
+
+    .kanban-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 4px;
+      margin-top: 4px;
+
+      button {
+        display: grid;
+        place-items: center;
+        width: 24px;
+        height: 24px;
+        border: 1px solid $border;
+        border-radius: 4px;
+        background: t.$neutral-100;
+        cursor: pointer;
+
+        &:disabled {
+          opacity: 0.35;
+          cursor: default;
+        }
+
+        mat-icon {
+          width: 16px;
+          height: 16px;
+          font-size: 16px;
+        }
+      }
+    }
+  }
+}
+
+.report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border: 1px solid $border;
+  border-radius: 8px;
+
+  .report-label {
+    min-width: 130px;
+    font-weight: 600;
+  }
+
+  .report-bar {
+    flex: 1;
+    height: 10px;
+    border-radius: 999px;
+    background: t.$neutral-100;
+    overflow: hidden;
+
+    .report-fill {
+      display: block;
+      height: 100%;
+      background: $title;
+      border-radius: 999px;
+    }
+  }
+
+  .recruiter-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .avatar {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: t.$neutral-100;
+      color: $title;
+      font-weight: 700;
+      font-size: 13px;
+    }
+  }
+}
+
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.breakdown-card {
+  padding: 16px;
+  border: 1px solid $border;
+  border-radius: 10px;
+
+  h3 {
+    margin: 0 0 12px;
+    color: $title;
+    font-size: 16px;
+  }
+
+  .breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid $border;
+    font-size: 14px;
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+}
+
+.skills-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid $border;
+  border-radius: 999px;
+  background: t.$neutral-100;
+  font-size: 13px;
+
+  strong {
+    color: $title;
+  }
+
+  span {
+    color: $muted;
+    font-size: 12px;
   }
 }

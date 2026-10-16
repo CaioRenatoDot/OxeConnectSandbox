@@ -1,5 +1,6 @@
 import { Component, computed, inject, input, numberAttribute, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Toast } from '../toast/toast';
@@ -7,7 +8,7 @@ import { JobOpening, Jobs } from '../jobs/jobs';
 
 // Página pública da vaga (estilo site de carreiras), aberta fora do layout administrativo
 @Component({
-  imports: [CurrencyPipe, DatePipe, MatButtonModule, MatIconModule],
+  imports: [CurrencyPipe, DatePipe, FormsModule, MatButtonModule, MatIconModule],
   selector: 'app-public-job',
   styleUrl: './public-job.scss',
   templateUrl: './public-job.html',
@@ -27,6 +28,10 @@ export class PublicJob {
     return status === 'Aberta' || status === 'Em entrevistas';
   });
   protected readonly applied = signal(false);
+
+  // Campos do formulário de candidatura
+  protected readonly applicantName = signal('');
+  protected readonly applicantRole = signal('');
 
   // Texto de exemplo montado a partir dos dados da vaga
   protected readonly responsibilities = computed(() => {
@@ -60,7 +65,14 @@ export class PublicJob {
   ];
 
   protected apply(job: JobOpening): void {
+    const name = this.applicantName().trim();
+    if (!name) {
+      this.toast.warning('Informe seu nome para enviar a candidatura');
+      return;
+    }
+    const role = this.applicantRole().trim() || `Desenvolvedor ${job.stack[0] ?? 'Software'}`;
+    this.jobs.apply(job, { name, role });
     this.applied.set(true);
-    this.toast.success(`Candidatura para "${job.title}" enviada!`);
+    this.toast.success(`Candidatura de ${name} para "${job.title}" enviada!`);
   }
 }
