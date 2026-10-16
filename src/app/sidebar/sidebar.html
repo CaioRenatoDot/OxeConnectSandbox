@@ -28,8 +28,12 @@
 
       <div class="submenu" [class.open]="!collapsed() && expanded() === item.label">
         <ul>
-          @for (child of item.children; track child) {
-            <li><a href="#" (click)="$event.preventDefault()">{{ child }}</a></li>
+          @for (child of item.children; track child.route) {
+            <li>
+              <a [routerLink]="child.route" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+                {{ child.label }}
+              </a>
+            </li>
           }
         </ul>
       </div>

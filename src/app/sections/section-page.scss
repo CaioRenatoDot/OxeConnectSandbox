@@ -1,0 +1,91 @@
+@use 'tokens' as t;
+
+$title: t.$action-500;
+$text: t.$neutral-600;
+$muted: t.$neutral-400;
+$border: t.$neutral-200;
+
+:host {
+  display: block;
+  min-height: 100vh;
+  padding: 24px 32px;
+  box-sizing: border-box;
+  background: t.$neutral-100;
+  color: $text;
+
+  @media (max-width: 700px) {
+    padding: 16px;
+  }
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: $muted;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+
+  .current-icon,
+  strong {
+    color: $title;
+  }
+}
+
+.page-header h1 {
+  margin: 0 0 20px;
+  font-size: 26px;
+  font-weight: 600;
+  color: $title;
+}
+
+// ---------- Conteúdo da aba ----------
+.panel {
+  padding: 48px 24px;
+  border-radius: 12px;
+  background: t.$white;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 8px;
+    border-radius: 50%;
+    background: t.$neutral-100;
+    color: $title;
+
+    mat-icon {
+      width: 32px;
+      height: 32px;
+      font-size: 32px;
+    }
+  }
+
+  h2 {
+    margin: 0;
+    color: $title;
+    font-size: 18px;
+  }
+
+  p {
+    max-width: 420px;
+    margin: 0 0 8px;
+    color: $muted;
+    font-size: 14px;
+  }
+}

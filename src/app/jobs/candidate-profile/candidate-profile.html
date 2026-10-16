@@ -1,0 +1,154 @@
+<div class="backdrop" (click)="closed.emit()"></div>
+
+<div class="modal" [class.expanded]="chatOpen()" role="dialog" aria-modal="true" [attr.aria-label]="'Análise de ' + candidate().name">
+  <header>
+    <div>
+      <h2>{{ candidate().name }}</h2>
+      <span>{{ candidate().role }} · inscrito em {{ candidate().appliedAt | date: 'dd/MM' }}</span>
+    </div>
+    <div class="overall" [class]="level(candidate().score)">
+      <strong>{{ candidate().score }}%</strong>
+      <small>aderência</small>
+    </div>
+    <button type="button" class="icon-btn" aria-label="Fechar" (click)="closed.emit()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <div class="body">
+    <section>
+      <h3>Skills avaliadas</h3>
+      <ul class="skills">
+        @for (skill of skills(); track skill.name) {
+          <li>
+            <span class="name">{{ skill.name }}</span>
+            <span class="bar"><span [class]="level(skill.score)" [style.width.%]="skill.score"></span></span>
+            <span class="value">{{ skill.score }}</span>
+          </li>
+        }
+      </ul>
+      <p class="summary">
+        <mat-icon>auto_awesome</mat-icon>
+        <span>
+          Ponto forte em <strong>{{ summary().best.name }}</strong>; vale aprofundar
+          <strong>{{ summary().worst.name }}</strong> na entrevista.
+        </span>
+      </p>
+    </section>
+
+    <section>
+      <h3>Entrevista com a IA</h3>
+      <div class="chat-card">
+        <div class="bot-avatar"><mat-icon>smart_toy</mat-icon></div>
+        <div class="stats">
+          <div><strong>{{ chat().length }}</strong><small>mensagens</small></div>
+          <div><strong>{{ answers() }}</strong><small>respostas avaliadas</small></div>
+          <div><strong>{{ duration() }} min</strong><small>duração</small></div>
+        </div>
+        <p class="preview">"{{ chat()[2].text }}"</p>
+        <button type="button" class="open-chat" (click)="chatOpen.set(true)">
+          <mat-icon>forum</mat-icon>
+          Abrir chat
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Painel de auditoria do chat -->
+  @if (chatOpen()) {
+    <div class="chat-panel">
+      <header class="chat-header">
+        <button type="button" class="icon-btn" aria-label="Voltar" (click)="chatOpen.set(false)">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="bot-avatar small"><mat-icon>smart_toy</mat-icon><span class="online"></span></div>
+        <div class="who">
+          <strong>Assistente de triagem</strong>
+          <small>Entrevista com {{ candidate().name }} · {{ chat()[0].time | date: "dd/MM/yyyy 'às' HH:mm" }}</small>
+        </div>
+        <div class="overall" [class]="level(candidate().score)">
+          <strong>{{ candidate().score }}%</strong>
+          <small>aderência</small>
+        </div>
+      </header>
+
+      <div class="chat-body">
+
+      <ol class="messages">
+        <li class="day">{{ chat()[0].time | date: 'dd/MM/yyyy' }}</li>
+        @for (message of chat(); track $index) {
+          <li class="message" [class]="message.from" [id]="'msg-' + $index">
+            @if (message.from === 'ai') {
+              <div class="bot-avatar tiny"><mat-icon>smart_toy</mat-icon></div>
+            }
+            <div class="content">
+              <div class="bubble">
+                @if (message.audio; as audio) {
+                  @let played = progress($index, audio.seconds);
+                  <div class="audio">
+                    <button
+                      type="button"
+                      class="play"
+                      [attr.aria-label]="playing()?.index === $index ? 'Pausar áudio' : 'Ouvir áudio'"
+                      (click)="togglePlay($index, audio.seconds)"
+                    >
+                      <mat-icon>{{ playing()?.index === $index ? 'pause' : 'play_arrow' }}</mat-icon>
+                    </button>
+                    <span class="wave">
+                      @for (bar of audio.waveform; track $index; let i = $index) {
+                        <span [style.height.%]="bar" [class.played]="i / audio.waveform.length < played"></span>
+                      }
+                    </span>
+                    <span class="length">
+                      {{ formatTime(playing()?.index === $index ? playing()!.elapsed : audio.seconds) }}
+                    </span>
+                  </div>
+                  <div class="transcript">
+                    <small><mat-icon>subtitles</mat-icon>Transcrição</small>
+                    {{ message.text }}
+                  </div>
+                } @else {
+                  {{ message.text }}
+                }
+                <time>{{ message.time | date: 'HH:mm' }}</time>
+              </div>
+              @if (message.evaluation; as evaluation) {
+                <div class="evaluation" [class]="level(evaluation.score)">
+                  <mat-icon>fact_check</mat-icon>
+                  <span><strong>{{ evaluation.skill }} · {{ evaluation.score }}</strong> {{ evaluation.note }}</span>
+                </div>
+              }
+            </div>
+          </li>
+        }
+        <li class="day">Entrevista encerrada · somente leitura</li>
+      </ol>
+
+      <!-- Lateral de auditoria: resumo e atalhos para cada resposta avaliada -->
+      <aside class="audit">
+        <h3>Auditoria</h3>
+        <dl class="facts">
+          <div><dt>Duração</dt><dd>{{ duration() }} min</dd></div>
+          <div><dt>Mensagens</dt><dd>{{ chat().length }}</dd></div>
+          <div><dt>Respostas em áudio</dt><dd>{{ answers() }}</dd></div>
+          <div><dt>Transcrição</dt><dd>Automática</dd></div>
+        </dl>
+
+        <h3>Respostas avaliadas</h3>
+        <ul class="jump">
+          @for (item of evaluations(); track item.index) {
+            <li>
+              <button type="button" (click)="scrollTo(item.index)">
+                <span class="dot" [class]="level(item.score)"></span>
+                <span class="skill">{{ item.skill }}</span>
+                <strong [class]="level(item.score)">{{ item.score }}</strong>
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </li>
+          }
+        </ul>
+      </aside>
+      </div>
+    </div>
+  }
+</div>

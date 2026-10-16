@@ -1,0 +1,94 @@
+<header class="topbar">
+  <div class="container">
+    <span class="brand"><mat-icon>work</mat-icon>{{ companyName }}</span>
+    <span class="muted">Trabalhe conosco</span>
+  </div>
+</header>
+
+@if (job(); as job) {
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">{{ companyName }} · Publicada em {{ job.openedAt | date: 'dd/MM/yyyy' }}</p>
+      <h1>{{ job.title }}</h1>
+      <ul class="meta">
+        <li><mat-icon>trending_up</mat-icon>{{ job.seniority }}</li>
+        <li><mat-icon>home_work</mat-icon>{{ job.model }}</li>
+        <li><mat-icon>payments</mat-icon>{{ job.salary | currency: 'BRL' : 'symbol' : '1.0-0' }}</li>
+      </ul>
+      <div class="tags">
+        @for (tech of job.stack; track tech) {
+          <span class="tag">{{ tech }}</span>
+        }
+      </div>
+    </div>
+  </section>
+
+  <div class="container content">
+    <article>
+      <section>
+        <h2>Sobre a vaga</h2>
+        <p>
+          Buscamos uma pessoa {{ job.seniority.toLowerCase() }} para atuar como {{ job.title.toLowerCase() }}, em
+          regime {{ job.model.toLowerCase() }}, trabalhando com {{ job.stack.join(', ') }} em produtos digitais da
+          {{ companyName }}.
+        </p>
+      </section>
+
+      <section>
+        <h2>Responsabilidades</h2>
+        <ul class="bullets">
+          @for (item of responsibilities(); track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      </section>
+
+      <section>
+        <h2>Requisitos</h2>
+        <ul class="bullets">
+          @for (item of requirements(); track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      </section>
+
+      <section>
+        <h2>Benefícios</h2>
+        <ul class="benefits">
+          @for (b of benefits; track b.label) {
+            <li><mat-icon>{{ b.icon }}</mat-icon>{{ b.label }}</li>
+          }
+        </ul>
+      </section>
+    </article>
+
+    <aside class="apply">
+      @if (!accepting()) {
+        <mat-icon class="state">block</mat-icon>
+        <h3>Inscrições encerradas</h3>
+        <p>Esta vaga não está recebendo candidaturas no momento.</p>
+      } @else if (applied()) {
+        <mat-icon class="state ok">check_circle</mat-icon>
+        <h3>Candidatura enviada</h3>
+        <p>Obrigado! Nosso time vai analisar seu perfil e entrar em contato.</p>
+      } @else {
+        <h3>Interessou?</h3>
+        <p>Envie sua candidatura e participe do processo seletivo.</p>
+        <button mat-flat-button (click)="apply(job)">
+          <mat-icon>send</mat-icon>
+          Candidatar-se
+        </button>
+      }
+    </aside>
+  </div>
+} @else {
+  <section class="container not-found">
+    <mat-icon>search_off</mat-icon>
+    <h1>Vaga não encontrada</h1>
+    <p>Ela pode ter sido removida ou o link está incorreto.</p>
+  </section>
+}
+
+<footer class="footer">
+  <div class="container">© {{ companyName }} · Todos os direitos reservados</div>
+</footer>

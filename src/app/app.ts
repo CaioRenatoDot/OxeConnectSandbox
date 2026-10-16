@@ -1,5 +1,7 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter, map } from 'rxjs';
 import { Sidebar } from './sidebar/sidebar';
 
 @Component({
@@ -9,5 +11,14 @@ import { Sidebar } from './sidebar/sidebar';
   templateUrl: './app.html',
 })
 export class App {
-  protected readonly title = signal('modern-angular');
+  private readonly router = inject(Router);
+
+  // Páginas públicas (site de carreiras) ficam fora do layout administrativo
+  protected readonly isPublic = toSignal(
+    this.router.events.pipe(
+      filter((e) => e instanceof NavigationEnd),
+      map((e) => e.urlAfterRedirects.startsWith('/carreiras')),
+    ),
+    { initialValue: location.pathname.startsWith('/carreiras') },
+  );
 }

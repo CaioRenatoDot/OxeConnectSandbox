@@ -40,12 +40,14 @@
       </div>
     </ng-template>
 
-    <button mat-flat-button (click)="toast.success('Vaga criada com sucesso')">
+    <button mat-flat-button (click)="openNewJob()">
       <mat-icon>add</mat-icon>
       Nova vaga
     </button>
   </div>
 </header>
+
+<app-section-tabs section="vagas" />
 
 <section class="stats">
   @for (stat of stats(); track stat.label) {
