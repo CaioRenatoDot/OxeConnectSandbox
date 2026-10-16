@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: oxeconnect-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: oxeconnect
+      POSTGRES_USER: oxeconnect
+      POSTGRES_PASSWORD: oxeconnect123
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oxeconnect -d oxeconnect"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

@@ -1,5 +1,6 @@
 import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
+import { provideHttpClient } from '@angular/common/http';
 import localePt from '@angular/common/locales/pt';
 import { ActivatedRouteSnapshot, ViewTransitionInfo, provideRouter, withComponentInputBinding, withInMemoryScrolling, withViewTransitions } from '@angular/router';
 import { routes } from './app.routes';
@@ -25,6 +26,7 @@ function slideDirection({ transition, from, to }: ViewTransitionInfo): void {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideHttpClient(),
     // withComponentInputBinding: parâmetros da rota (ex.: :id) viram input() do componente
     // withViewTransitions: animação entre páginas (estilos em styles.scss)
     provideRouter(

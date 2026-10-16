@@ -70,14 +70,37 @@
       } @else if (applied()) {
         <mat-icon class="state ok">check_circle</mat-icon>
         <h3>Candidatura enviada</h3>
-        <p>Obrigado! Nosso time vai analisar seu perfil e entrar em contato.</p>
+        <p>Obrigado, <strong>{{ applicantName() }}</strong>! Nosso time vai analisar seu perfil e entrar em contato.</p>
       } @else {
         <h3>Interessou?</h3>
-        <p>Envie sua candidatura e participe do processo seletivo.</p>
-        <button mat-flat-button (click)="apply(job)">
-          <mat-icon>send</mat-icon>
-          Candidatar-se
-        </button>
+        <p>Preencha seus dados e participe do processo seletivo.</p>
+        <form class="apply-form" (ngSubmit)="apply(job)">
+          <label class="apply-field">
+            <span>Nome completo</span>
+            <input
+              type="text"
+              name="applicantName"
+              placeholder="Ex.: Ana Beatriz Silva"
+              [ngModel]="applicantName()"
+              (ngModelChange)="applicantName.set($event)"
+              required
+            />
+          </label>
+          <label class="apply-field">
+            <span>Cargo / Especialidade</span>
+            <input
+              type="text"
+              name="applicantRole"
+              [placeholder]="'Ex.: Desenvolvedor ' + (job.stack[0] || 'Full Stack')"
+              [ngModel]="applicantRole()"
+              (ngModelChange)="applicantRole.set($event)"
+            />
+          </label>
+          <button mat-flat-button type="submit">
+            <mat-icon>send</mat-icon>
+            Candidatar-se
+          </button>
+        </form>
       }
     </aside>
   </div>

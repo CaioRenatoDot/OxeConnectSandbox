@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, effect, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 export type Status = 'Aberta' | 'Em entrevistas' | 'Pausada' | 'Encerrada';
 export type Seniority = 'Júnior' | 'Pleno' | 'Sênior' | 'Especialista';
@@ -21,11 +22,32 @@ export interface JobOpening {
 
 export interface Candidate {
   id: number;
+  jobId?: number;
+  jobTitle?: string;
   name: string;
   role: string;
   score: number;
   stage: Stage;
   appliedAt: string;
+  favorite?: boolean;
+}
+
+export interface CandidateSkillDto {
+  name: string;
+  score: number;
+}
+
+export interface InterviewMessageDto {
+  from: 'ai' | 'candidate';
+  text: string;
+  time: string;
+  audio?: { seconds: number; waveform: number[] };
+  evaluation?: { skill: string; score: number; note: string };
+}
+
+export interface CandidateProfileDto {
+  skills: CandidateSkillDto[];
+  messages: InterviewMessageDto[];
 }
 
 export const STATUSES: Status[] = ['Aberta', 'Em entrevistas', 'Pausada', 'Encerrada'];
@@ -50,60 +72,153 @@ export const STAGE_LABEL: Record<Stage, string> = {
   Contratado: 'label-success',
 };
 
-const NAMES = [
-  'Lucas Almeida', 'Mariana Costa', 'Pedro Henrique', 'Juliana Ribeiro', 'Rafael Nunes',
-  'Beatriz Santos', 'Gabriel Oliveira', 'Larissa Ferreira', 'Thiago Martins', 'Camila Rocha',
-  'Felipe Araújo', 'Amanda Carvalho',
-];
-const ROLES = ['Desenvolvedor', 'Analista', 'Engenheiro', 'Consultor', 'Freelancer'];
-
 @Injectable({ providedIn: 'root' })
 export class Jobs {
-  readonly all = signal<JobOpening[]>([
-    { id: 1, title: 'Desenvolvedor Front-end Angular', stack: ['Angular', 'TypeScript', 'RxJS'], openedAt: '2026-09-02', seniority: 'Pleno', model: 'Remoto', candidates: 48, interviews: 6, salary: 9500, recruiter: 'Ana Souza', status: 'Em entrevistas' },
-    { id: 2, title: 'Engenheiro de Dados', stack: ['Python', 'Spark', 'AWS'], openedAt: '2026-08-21', seniority: 'Sênior', model: 'Híbrido', candidates: 31, interviews: 4, salary: 15000, recruiter: 'Bruno Lima', status: 'Aberta' },
-    { id: 3, title: 'Desenvolvedor Back-end Java', stack: ['Java', 'Spring Boot', 'Kafka'], openedAt: '2026-07-15', seniority: 'Sênior', model: 'Remoto', candidates: 62, interviews: 9, salary: 14000, recruiter: 'Ana Souza', status: 'Em entrevistas' },
-    { id: 4, title: 'Analista de QA', stack: ['Cypress', 'Playwright'], openedAt: '2026-09-10', seniority: 'Júnior', model: 'Presencial', candidates: 85, interviews: 3, salary: 4500, recruiter: 'Carla Mendes', status: 'Aberta' },
-    { id: 5, title: 'DevOps / SRE', stack: ['Kubernetes', 'Terraform', 'GCP'], openedAt: '2026-06-30', seniority: 'Especialista', model: 'Remoto', candidates: 19, interviews: 2, salary: 19000, recruiter: 'Bruno Lima', status: 'Pausada' },
-    { id: 6, title: 'Desenvolvedor Mobile Flutter', stack: ['Flutter', 'Dart', 'Firebase'], openedAt: '2026-08-05', seniority: 'Pleno', model: 'Híbrido', candidates: 40, interviews: 5, salary: 8800, recruiter: 'Carla Mendes', status: 'Em entrevistas' },
-    { id: 7, title: 'Cientista de Dados', stack: ['Python', 'PyTorch', 'SQL'], openedAt: '2026-05-12', seniority: 'Sênior', model: 'Remoto', candidates: 27, interviews: 0, salary: 16500, recruiter: 'Ana Souza', status: 'Encerrada' },
-    { id: 8, title: 'Desenvolvedor Full Stack', stack: ['React', 'Node.js', 'PostgreSQL'], openedAt: '2026-09-18', seniority: 'Pleno', model: 'Remoto', candidates: 73, interviews: 7, salary: 10500, recruiter: 'Diego Rocha', status: 'Aberta' },
-    { id: 9, title: 'Designer UX/UI', stack: ['Figma', 'Design System'], openedAt: '2026-09-25', seniority: 'Pleno', model: 'Híbrido', candidates: 56, interviews: 4, salary: 8000, recruiter: 'Diego Rocha', status: 'Em entrevistas' },
-    { id: 10, title: 'Estagiário de Desenvolvimento', stack: ['JavaScript', 'Git'], openedAt: '2026-10-01', seniority: 'Júnior', model: 'Presencial', candidates: 140, interviews: 12, salary: 2000, recruiter: 'Carla Mendes', status: 'Aberta' },
-  ]);
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = 'http://localhost:8080/api/jobs';
 
-  // Candidatos de exemplo por vaga (gerados de forma determinística a partir do id)
+  readonly all = signal<JobOpening[]>([]);
+  readonly allCandidates = signal<Candidate[]>([]);
+
   private readonly candidatesByJob = new Map<number, ReturnType<typeof signal<Candidate[]>>>();
+  private readonly profilesByCandidate = new Map<string, ReturnType<typeof signal<CandidateProfileDto | null>>>();
+
+  constructor() {
+    this.loadJobs();
+    this.loadAllCandidates();
+  }
+
+  loadJobs(): void {
+    this.http.get<JobOpening[]>(this.apiUrl).subscribe({
+      next: (jobs) => this.all.set(jobs),
+      error: (err) => console.error('Erro ao carregar vagas do backend:', err),
+    });
+  }
+
+  loadAllCandidates(): void {
+    this.http.get<Candidate[]>(`${this.apiUrl}/candidates`).subscribe({
+      next: (candidates) => this.allCandidates.set(candidates),
+      error: (err) => console.error('Erro ao carregar banco de talentos:', err),
+    });
+  }
 
   find(id: number): JobOpening | undefined {
     return this.all().find((job) => job.id === id);
   }
 
-  /** Cadastra uma vaga nova (aberta, sem candidatos) no topo da lista. */
+  /** Cadastra uma vaga nova (aberta, sem candidatos) no topo da lista e persiste no backend. */
   create(data: Pick<JobOpening, 'title' | 'stack' | 'seniority' | 'model' | 'salary' | 'recruiter'>): JobOpening {
-    const job: JobOpening = {
+    const tempId = Math.max(0, ...this.all().map((j) => j.id)) + 1;
+    const optimisticJob: JobOpening = {
       ...data,
-      id: Math.max(0, ...this.all().map((j) => j.id)) + 1,
+      id: tempId,
       openedAt: new Date().toISOString().slice(0, 10),
       candidates: 0,
       interviews: 0,
       status: 'Aberta',
     };
-    this.all.update((jobs) => [job, ...jobs]);
-    return job;
+    this.all.update((jobs) => [optimisticJob, ...jobs]);
+
+    this.http
+      .post<JobOpening>(this.apiUrl, {
+        ...data,
+        status: 'Aberta',
+      })
+      .subscribe({
+        next: (created) => {
+          this.all.update((jobs) => jobs.map((j) => (j.id === tempId ? created : j)));
+        },
+        error: (err) => {
+          console.error('Erro ao criar vaga no backend:', err);
+          this.loadJobs();
+        },
+      });
+
+    return optimisticJob;
   }
 
   setStatus(id: number, status: Status): void {
     this.all.update((jobs) => jobs.map((job) => (job.id === id ? { ...job, status } : job)));
+    this.http.patch<JobOpening>(`${this.apiUrl}/${id}/status`, { status }).subscribe({
+      next: (updated) => {
+        this.all.update((jobs) => jobs.map((job) => (job.id === id ? updated : job)));
+      },
+      error: (err) => {
+        console.error('Erro ao atualizar status da vaga:', err);
+        this.loadJobs();
+      },
+    });
   }
 
   candidatesOf(job: JobOpening) {
     let list = this.candidatesByJob.get(job.id);
     if (!list) {
-      list = signal(this.generateCandidates(job));
+      list = signal<Candidate[]>([]);
       this.candidatesByJob.set(job.id, list);
+      this.loadCandidates(job.id);
     }
     return list;
+  }
+
+  loadCandidates(jobId: number): void {
+    this.http.get<Candidate[]>(`${this.apiUrl}/${jobId}/candidates`).subscribe({
+      next: (candidates) => {
+        let list = this.candidatesByJob.get(jobId);
+        if (!list) {
+          list = signal<Candidate[]>(candidates);
+          this.candidatesByJob.set(jobId, list);
+        } else {
+          list.set(candidates);
+        }
+      },
+      error: (err) => console.error(`Erro ao carregar candidatos da vaga ${jobId}:`, err),
+    });
+  }
+
+  profileOf(jobId: number, candidateId: number) {
+    const key = `${jobId}:${candidateId}`;
+    let profileSig = this.profilesByCandidate.get(key);
+    if (!profileSig) {
+      profileSig = signal<CandidateProfileDto | null>(null);
+      this.profilesByCandidate.set(key, profileSig);
+      this.http
+        .get<CandidateProfileDto>(`${this.apiUrl}/${jobId}/candidates/${candidateId}/profile`)
+        .subscribe({
+          next: (profile) => profileSig!.set(profile),
+          error: (err) => console.error(`Erro ao carregar perfil do candidato ${candidateId}:`, err),
+        });
+    }
+    return profileSig;
+  }
+
+  toggleFavorite(candidate: Candidate): void {
+    const jobId = candidate.jobId;
+    if (!jobId) return;
+
+    const nextFav = !candidate.favorite;
+    this.allCandidates.update((list) =>
+      list.map((c) => (c.id === candidate.id ? { ...c, favorite: nextFav } : c)),
+    );
+    const jobList = this.candidatesByJob.get(jobId);
+    if (jobList) {
+      jobList.update((list) =>
+        list.map((c) => (c.id === candidate.id ? { ...c, favorite: nextFav } : c)),
+      );
+    }
+
+    this.http
+      .patch<Candidate>(`${this.apiUrl}/${jobId}/candidates/${candidate.id}/favorite`, {})
+      .subscribe({
+        next: (updated) => {
+          this.allCandidates.update((list) =>
+            list.map((c) => (c.id === candidate.id ? updated : c)),
+          );
+          if (jobList) {
+            jobList.update((list) => list.map((c) => (c.id === candidate.id ? updated : c)));
+          }
+        },
+        error: (err) => console.error('Erro ao favoritar candidato:', err),
+      });
   }
 
   moveCandidate(job: JobOpening, candidateId: number, direction: 1 | -1): void {
@@ -114,21 +229,52 @@ export class Jobs {
         return { ...c, stage: STAGES[index] };
       }),
     );
+
+    this.http
+      .patch<Candidate>(`${this.apiUrl}/${job.id}/candidates/${candidateId}/stage`, { direction })
+      .subscribe({
+        next: (updated) => {
+          this.candidatesOf(job).update((list) =>
+            list.map((c) => (c.id === candidateId ? updated : c)),
+          );
+          this.allCandidates.update((list) =>
+            list.map((c) => (c.id === candidateId ? updated : c)),
+          );
+          if (updated.stage === 'Entrevista') {
+            this.loadJobs();
+          }
+        },
+        error: (err) => {
+          console.error('Erro ao mover candidato de etapa:', err);
+          this.loadCandidates(job.id);
+        },
+      });
   }
 
-  private generateCandidates(job: JobOpening): Candidate[] {
-    const count = Math.min(job.candidates, 10);
-    return Array.from({ length: count }, (_, i) => {
-      const seed = job.id * 7 + i * 13;
-      const day = String(((seed * 3) % 27) + 1).padStart(2, '0');
-      return {
-        id: i + 1,
-        name: NAMES[seed % NAMES.length],
-        role: `${ROLES[seed % ROLES.length]} ${job.stack[i % job.stack.length]}`,
-        score: 55 + ((seed * 17) % 45),
-        stage: STAGES[(seed + i) % (job.status === 'Encerrada' ? STAGES.length : STAGES.length - 1)],
-        appliedAt: `${job.openedAt.slice(0, 8)}${day}`,
-      };
-    });
+  /** Registra uma candidatura enviada pela página pública da vaga (/carreiras/vagas/:id). */
+  apply(job: JobOpening, applicant?: { name: string; role: string }): void {
+    const mainTech = job.stack[0] ?? 'Software';
+    const name = applicant?.name?.trim() || 'Novo Candidato';
+    const role = applicant?.role?.trim() || `Desenvolvedor ${mainTech}`;
+
+    this.http
+      .post<Candidate>(`${this.apiUrl}/${job.id}/candidates`, {
+        name,
+        role,
+        stage: 'Inscrito',
+      })
+      .subscribe({
+        next: (created) => {
+          this.all.update((jobs) =>
+            jobs.map((j) => (j.id === job.id ? { ...j, candidates: j.candidates + 1 } : j)),
+          );
+          const list = this.candidatesByJob.get(job.id);
+          if (list) {
+            list.update((items) => [created, ...items]);
+          }
+          this.allCandidates.update((items) => [created, ...items]);
+        },
+        error: (err) => console.error('Erro ao enviar candidatura:', err),
+      });
   }
 }

@@ -1,7 +1,7 @@
 import { Component, DestroyRef, computed, inject, input, output, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { Candidate, JobOpening } from '../jobs';
+import { Candidate, JobOpening, Jobs } from '../jobs';
 
 interface Skill {
   name: string;
@@ -18,7 +18,7 @@ interface Message {
   evaluation?: { skill: string; score: number; note: string };
 }
 
-// Barras da forma de onda, geradas a partir de uma semente (dados simulados)
+// Barras da forma de onda, geradas a partir de uma semente (fallback local)
 function waveform(seed: number): number[] {
   return Array.from({ length: 32 }, (_, i) => 25 + ((seed * 37 + i * 53 + ((i * i) % 7) * 11) % 75));
 }
@@ -62,14 +62,25 @@ const SOFT_SKILLS = ['Comunicação', 'Resolução de problemas'];
   host: { '(document:keydown.escape)': 'close()' },
 })
 export class CandidateProfile {
+  private readonly jobs = inject(Jobs);
+
   readonly candidate = input.required<Candidate>();
   readonly job = input.required<JobOpening>();
   readonly closed = output<void>();
 
   protected readonly chatOpen = signal(false);
 
-  // Pontuação de cada skill, derivada do score geral (dados simulados)
+  // Perfil persistido no backend PostgreSQL (/api/jobs/:jobId/candidates/:candidateId/profile)
+  private readonly backendProfile = computed(() =>
+    this.jobs.profileOf(this.job().id, this.candidate().id)(),
+  );
+
+  // Pontuação de cada skill vinda do backend (com fallback imediato enquanto carrega)
   protected readonly skills = computed<Skill[]>(() => {
+    const persisted = this.backendProfile();
+    if (persisted?.skills?.length) {
+      return persisted.skills;
+    }
     const { id, score } = this.candidate();
     return [...this.job().stack, ...SOFT_SKILLS].map((name, i) => {
       const variation = ((id * 31 + i * 17) % 21) - 10;
@@ -78,6 +89,14 @@ export class CandidateProfile {
   });
 
   protected readonly chat = computed<Message[]>(() => {
+    const persisted = this.backendProfile();
+    if (persisted?.messages?.length) {
+      return persisted.messages.map((m) => ({
+        ...m,
+        time: new Date(m.time),
+      }));
+    }
+
     const { name, id, appliedAt } = this.candidate();
     const firstName = name.split(' ')[0];
     const time = new Date(`${appliedAt}T14:00:00`);
