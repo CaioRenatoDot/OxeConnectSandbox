@@ -21,7 +21,7 @@ Aplicação full-stack de Recrutamento e Seleção para vagas de tecnologia, com
 
 ## Arquitetura e Tecnologias
 
-- **Frontend (`/`):**
+- **Frontend (`/frontend`):**
   - Angular 22 (`@angular/core`, `@angular/router` com `withViewTransitions`, `@angular/material`, `@angular/cdk`)
   - Gerenciamento de estado reativo com Angular **Signals** + `HttpClient`
 - **Backend (`/backend`):**
@@ -86,9 +86,10 @@ Na primeira execução, o `DataSeeder` populará automaticamente o banco Postgre
 
 ### 3. Frontend (Angular)
 
-Em um novo terminal, na **raiz do repositório**, instale as dependências e inicie o servidor de desenvolvimento:
+Em um novo terminal, entre na pasta `frontend`, instale as dependências e inicie o servidor de desenvolvimento:
 
 ```bash
+cd frontend
 npm install
 npm start
 ```
@@ -146,6 +147,7 @@ cd backend
 
 **Testes unitários do Frontend (Angular / Vitest):**
 ```bash
+cd frontend
 npm test
 ```
 
@@ -168,13 +170,14 @@ OxeConnectSandbox/
 │       │   └── resources/
 │       │       └── application.yml     # Configurações de banco e servidor
 │       └── test/                       # Testes de integração (MockMvc)
-├── src/                                # Código-fonte do Frontend Angular 22
-│   └── app/
-│       ├── careers/                    # Página pública da vaga (/carreiras/vagas/:id)
-│       ├── dashboard/                  # Listagem principal de vagas, estatísticas e filtros
-│       ├── jobs/                       # Serviço Jobs, detalhe da vaga, modal nova vaga e perfil IA
-│       ├── sections/                   # Abas de seções (Banco de Talentos, Kanban, Relatórios, Configs)
-│       └── sidebar/                    # Menu de navegação lateral
-├── angular.json
-└── package.json
+└── frontend/                           # Projeto Frontend Angular 22
+    ├── src/
+    │   └── app/
+    │       ├── careers/                # Página pública da vaga (/carreiras/vagas/:id)
+    │       ├── dashboard/              # Listagem principal de vagas, estatísticas e filtros
+    │       ├── jobs/                   # Serviço Jobs, detalhe da vaga, modal nova vaga e perfil IA
+    │       ├── sections/               # Abas de seções (Banco de Talentos, Kanban, Relatórios, Configs)
+    │       └── sidebar/                # Menu de navegação lateral
+    ├── angular.json
+    └── package.json
 ```
